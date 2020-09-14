@@ -88,24 +88,25 @@ def depthFirstSearch(problem):
     visited_node = []
     visited_node.append(problem.getStartState())
     fringe = util.Stack()
-    expand_node = problem.getStartState()
-    fringe.push(expand_node)
+    expand_node = (problem.getStartState(),0)
+    level = 0
     while 1:
-        print(fringe.list)
-        expand_node = fringe.pop()
-        if problem.isGoalState(expand_node):
+        if problem.isGoalState(expand_node[0]):
             break
-        subnodes = problem.getSuccessors(expand_node)
+        subnodes = problem.getSuccessors(expand_node[0])
         for i in subnodes:
             if i[0] in visited_node:
                 continue
             else:
-                directions.append(i[1])
                 visited_node.append(i[0])
-                fringe.push(i[0])
+                fringe.push((i,))
+        print(fringe.list)
+        expand_node, direction, _ = fringe.pop()
+        directions.append(direction)
+            
 
 
-    return  directions
+    return 
     
 
 def breadthFirstSearch(problem):
