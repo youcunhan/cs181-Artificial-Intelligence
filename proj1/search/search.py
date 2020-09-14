@@ -83,41 +83,64 @@ def depthFirstSearch(problem):
     understand the search problem that is being passed in:
     """
 
-    directions = []
-
-    visited_node = []
-    visited_node.append(problem.getStartState())
     fringe = util.Stack()
-    expand_node = (problem.getStartState(),0)
-    level = 0
-    while 1:
-        if problem.isGoalState(expand_node[0]):
-            break
-        subnodes = problem.getSuccessors(expand_node[0])
-        for i in subnodes:
-            if i[0] in visited_node:
-                continue
-            else:
-                visited_node.append(i[0])
-                fringe.push((i,))
-        print(fringe.list)
-        expand_node, direction, _ = fringe.pop()
-        directions.append(direction)
-            
-
-
-    return 
+    #The second list is to store path from starting point.
+    node = [problem.getStartState(), []]
+    fringe.push(node)
+    visited_node = []
+    while (not fringe.isEmpty()):
+        node = fringe.pop()
+        if problem.isGoalState(node[0]):
+            return node[1]
+        else:
+            if node[0] not in visited_node:
+                for edge in problem.getSuccessors(node[0]):
+                    if edge[0] not in visited_node:
+                        subnode = [edge[0],node[1]+[edge[1]]]
+                        fringe.push(subnode)
+                visited_node.append(node[0])
     
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    fringe = util.Queue()
+    #The second list is to store path from starting point.
+    node = [problem.getStartState(), []]
+    fringe.push(node)
+    visited_node = []
+    while (not fringe.isEmpty()):
+        node = fringe.pop()
+        if problem.isGoalState(node[0]):
+            return node[1]
+        else:
+            if node[0] not in visited_node:
+                for edge in problem.getSuccessors(node[0]):
+                    if edge[0] not in visited_node:
+                        subnode = [edge[0], node[1] + [edge[1]]]
+                        fringe.push(subnode)
+                visited_node.append(node[0])
+            
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.PriorityQueue()
+    #The second list is to store path from starting point, the third integer is to store the cost.
+    node = [problem.getStartState(), [], 0]
+    fringe.update(node, node[2])
+    visited_node = []
+    while (not fringe.isEmpty()):
+        node = fringe.pop()
+        if problem.isGoalState(node[0]):
+            return node[1]
+        else:
+            if node[0] not in visited_node:
+                for edge in problem.getSuccessors(node[0]):
+                    if edge[0] not in visited_node:
+                        subnode = [edge[0], node[1] + [edge[1]], node[2] + edge[2]]
+                        fringe.update(subnode, subnode[2])
+                visited_node.append(node[0])
 
 def nullHeuristic(state, problem=None):
     """
@@ -128,8 +151,22 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.PriorityQueue()
+    #The second list is to store path from starting point, the third integer is to store the cost.
+    node = [problem.getStartState(), [], 0]
+    fringe.update(node, node[2] + heuristic(node[0], problem))
+    visited_node = []
+    while (not fringe.isEmpty()):
+        node = fringe.pop()
+        if problem.isGoalState(node[0]):
+            return node[1]
+        else:
+            if node[0] not in visited_node:
+                for edge in problem.getSuccessors(node[0]):
+                    if edge[0] not in visited_node:
+                        subnode = [edge[0], node[1] + [edge[1]], node[2] + edge[2]]
+                        fringe.update(subnode, subnode[2] + heuristic(subnode[0], problem))
+                visited_node.append(node[0])
 
 
 # Abbreviations
