@@ -473,8 +473,19 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+
+    # Consider the furthest dot (the dots in the path can be eaten when going to thr furthest dot)
+    foodRemain = {}
+    x,y = position
+    for food in foodGrid.asList():
+        foodRemain[food] = 0
+    if len(foodRemain)>0:
+        for nextNode in foodRemain.keys():
+            foodRemain[nextNode] = mazeDistance((x,y), nextNode, problem.startingGameState)
+        x,y = max(foodRemain,key=lambda key:foodRemain[key])
+        return foodRemain[(x,y)]
+    else:
+        return 0
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -505,7 +516,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.uniformCostSearch(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -541,7 +552,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.food[x][y]
 
 def mazeDistance(point1, point2, gameState):
     """
