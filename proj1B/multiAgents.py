@@ -137,37 +137,33 @@ class MinimaxAgent(MultiAgentSearchAgent):
         maxVal = float('-inf')
         bestAction = None
         for action in gameState.getLegalActions(0):
-            value = self.getMin(gameState.generateSuccessor(0, action),0,1)
+            value = self.min_value(gameState.generateSuccessor(0, action), 0, 1)
             if value > maxVal:
                 maxVal = value
                 bestAction = action
         return bestAction
 
         
-    def getMax(self, gameState, depth, agentIndex):
-        if depth == self.depth:
-            return self.evaluationFunction(gameState)
-        if len(gameState.getLegalActions(agentIndex)) == 0:
+    def max_value(self, gameState, depth, agentIndex):
+        if depth == self.depth or len(gameState.getLegalActions(agentIndex)) == 0:
             return self.evaluationFunction(gameState)
         maxVal = float('-inf')
         for action in gameState.getLegalActions(agentIndex):
-            value = self.getMin(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
+            value = self.min_value(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
             if value > maxVal:
                 maxVal = value
         return maxVal            
 
 
-    def getMin(self, gameState, depth, agentIndex):
-        if depth == self.depth:
-            return self.evaluationFunction(gameState)
-        if len(gameState.getLegalActions(agentIndex)) == 0:
+    def min_value(self, gameState, depth, agentIndex):
+        if depth == self.depth or len(gameState.getLegalActions(agentIndex)) == 0:
             return self.evaluationFunction(gameState)
         minVal = float('inf')
         for action in gameState.getLegalActions(agentIndex):
             if agentIndex == gameState.getNumAgents()-1:
-                value = self.getMax(gameState.generateSuccessor(agentIndex, action), depth + 1, 0)
+                value = self.max_value(gameState.generateSuccessor(agentIndex, action), depth + 1, 0)
             else:
-                value = self.getMin(gameState.generateSuccessor(agentIndex, action), depth,agentIndex + 1)
+                value = self.min_value(gameState.generateSuccessor(agentIndex, action), depth,agentIndex + 1)
             if value < minVal:
                 minVal = value
         return minVal
@@ -182,57 +178,40 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        return self.getMax(gameState, 0, 0, float('-inf'), float('inf'))[1]
+        return self.max_value(gameState, 0, 0, float('-inf'), float('inf'))[1]
 
-    # getMax主要是计算吃豆人选择最佳的动作
-    def getMax(self, gameState, depth,agentIndex, alpha, beta):
-        # 如果达到搜索深度，则将当前状态的评价值返回
-        if depth == self.depth:
-            return self.evaluationFunction(gameState),None
-        # 如果接下来没有可行的行动，也要终止迭代
-        if len(gameState.getLegalActions(agentIndex)) == 0:
-            return self.evaluationFunction(gameState),None
-        # 获得吃豆人的所有可行操作，并进行遍历
-        maxVal = -float('inf')
+    def max_value(self, gameState, depth, agentIndex, alpha, beta):
+        if depth == self.depth or len(gameState.getLegalActions(agentIndex)) == 0:
+            return self.evaluationFunction(gameState), None
+        maxVal = float('-inf')
         bestAction = None
         for action in gameState.getLegalActions(agentIndex):
-            # 参数中最后的“1”，表示接下来的动作是计算鬼怪的行动影响
-            value = self.getMin(gameState.generateSuccessor(agentIndex, action),depth,agentIndex+1,alpha,beta)[0]
-            if value>maxVal:
+            value = self.min_value(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1, alpha, beta)[0]
+            if value > maxVal:
                 maxVal = value
                 bestAction = action
-            # 如果v>beta,
-            if value>beta:
-                return value,action
-            alpha = value if value>alpha else alpha
-        return maxVal,bestAction
+            if value > beta:
+                return value, action
+            alpha = value if value > alpha else alpha
+        return maxVal, bestAction
 
-    # getMin主要是计算鬼怪选择造成最坏影响的动作
-    def getMin(self,gameState,depth=0,agentIndex=1,alpha=-float('inf'),beta=float('inf')):
-        # 如果达到搜索深度，则将当前状态的评价值返回
-        if depth == self.depth:
-            return self.evaluationFunction(gameState),None
-        # 如果接下来没有可行的行动，也要终止迭代
-        if len(gameState.getLegalActions(agentIndex)) == 0:
-            return self.evaluationFunction(gameState),None
-        # 获得当前鬼怪的所有可行操作，并进行遍历
+    def min_value(self, gameState, depth, agentIndex, alpha, beta):
+        if depth == self.depth or len(gameState.getLegalActions(agentIndex)) == 0:
+            return self.evaluationFunction(gameState), None
         minVal = float('inf')
         bestAction = None
         for action in gameState.getLegalActions(agentIndex):
-            # 如果你是最后一个鬼怪的agent，那么接下来就要去计算吃豆人的行动，否则就去计算下一个鬼怪的行动
-            if agentIndex == gameState.getNumAgents()-1:
-                # 参数中最后的“0”，表示接下来的动作是计算吃豆人的行动影响
-                value = self.getMax(gameState.generateSuccessor(agentIndex, action),depth+1,0,alpha,beta)[0]
+            if agentIndex == gameState.getNumAgents() - 1:
+                value = self.max_value(gameState.generateSuccessor(agentIndex, action),depth + 1, 0, alpha, beta)[0]
             else:
-                # 参数中最后的agentIndex(大于1)，表示接下来的动作是计算鬼怪的行动影响
-                value = self.getMin(gameState.generateSuccessor(agentIndex, action),depth,agentIndex+1,alpha,beta)[0]
+                value = self.min_value(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1, alpha, beta)[0]
             if value<minVal:
                 minVal = value
                 bestAction = action
-            if value<alpha:
+            if value < alpha:
                 return value,action
-            beta = value if value<beta else beta # 这个条件选择语句和C语言中"exp1?exp2:exp3"一样
-        return minVal,bestAction
+            beta = value if value < beta else beta
+        return minVal, bestAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -247,7 +226,32 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.max_value(gameState, 0, 0)[1]
+
+    def max_value(self, gameState, depth,agentIndex):
+        if depth == self.depth or len(gameState.getLegalActions(agentIndex)) == 0:
+            return self.evaluationFunction(gameState), None
+        maxVal = float('-inf')
+        bestAction = None
+        for action in gameState.getLegalActions(agentIndex):
+            value = self.exp_value(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
+            if value > maxVal:
+                maxVal = value
+                bestAction = action
+        return maxVal, bestAction
+
+    def exp_value(self, gameState, depth, agentIndex):
+        if depth == self.depth or len(gameState.getLegalActions(agentIndex)) == 0:
+            return self.evaluationFunction(gameState)
+        totalUtil = 0
+        for action in gameState.getLegalActions(agentIndex):
+            if agentIndex == gameState.getNumAgents() - 1:
+                value = self.max_value(gameState.generateSuccessor(agentIndex, action), depth + 1, 0)[0]
+                totalUtil += value
+            else:
+                value = self.exp_value(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
+                totalUtil += value
+        return totalUtil/len(gameState.getLegalActions(agentIndex))
 
 def betterEvaluationFunction(currentGameState):
     """
@@ -257,7 +261,28 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    value = currentGameState.getScore()
+
+    ghostValue = 0
+    for ghost in newGhostStates:
+        distance = manhattanDistance(newPos, newGhostStates[0].getPosition())
+        if distance > 0:
+            # the ghost is scared, attack him!
+            if ghost.scaredTimer > 0:
+                ghostValue += 1.0 / distance
+            # run!
+            else:
+                ghostValue -= 1.0 / distance
+    value += ghostValue
+
+    distancesToFood = [manhattanDistance(newPos, x) for x in newFood.asList()]
+    if len(distancesToFood) != 0:
+        value += 1.0 / min(distancesToFood)
+
+    return value
 
 # Abbreviation
 better = betterEvaluationFunction
