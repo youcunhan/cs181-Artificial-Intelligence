@@ -183,7 +183,24 @@ def exactlyOne(literals) :
     the inits in the list is true.
     """
     "*** YOUR CODE HERE ***"
-    return logic.to_cnf(atLeastOne(literals) & atMostOne(literals))
+    conjunctions = []
+    true_list = []
+    for literal in literals:
+        true_list.append(literal)
+
+        reached = False
+        for inner_literal in literals:
+            if reached:
+                not_inner_literal = ~inner_literal
+                disjunction = logic.disjoin(~literal, not_inner_literal)
+                conjunctions.append(disjunction)
+            if literal == inner_literal:
+                reached = True
+
+    true_one = logic.disjoin(true_list)
+    conjunctions.append(true_one)
+
+    return logic.conjoin(conjunctions)
 
 
 def extractActionSequence(model, actions):
