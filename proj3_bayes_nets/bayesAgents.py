@@ -218,30 +218,26 @@ def fillObsCPT(bayesNet, gameState):
             obsVar = OBS_VAR_TEMPLATE % obsPos
             obsVarFactor = bn.Factor([obsVar], [FOOD_HOUSE_VAR, GHOST_HOUSE_VAR], bayesNet.variableDomainsDict())
             for assignment in obsVarFactor.getAllPossibleAssignmentDicts():
-                ghostHouseVal = assignment[GHOST_HOUSE_VAR]
-                foodHouseVal = assignment[FOOD_HOUSE_VAR]
                 color = assignment[obsVar]
                 near_house = getNearestHouse(gameState, obsPos)
-
-                if near_house != ghostHouseVal and near_house != foodHouseVal:
-                    if color == RED_OBS_VAL or color == BLUE_OBS_VAL:
-                        prob = 0
-                    elif color == NO_OBS_VAL:
-                        prob = 1
-                elif ghostHouseVal == foodHouseVal or foodHouseVal == near_house:
+                if near_house != assignment[GHOST_HOUSE_VAR] and near_house != assignment[FOOD_HOUSE_VAR]:
+                    prob = 1 if color == NO_OBS_VAL else 0
+                elif assignment[GHOST_HOUSE_VAR] == assignment[FOOD_HOUSE_VAR] or assignment[FOOD_HOUSE_VAR] == near_house:
                     if color == RED_OBS_VAL:
                         prob = PROB_FOOD_RED
                     elif color == BLUE_OBS_VAL:
                         prob = 1 - PROB_FOOD_RED
                     elif color == NO_OBS_VAL:
                         prob = 0
-                elif near_house == ghostHouseVal:
+                elif near_house == assignment[GHOST_HOUSE_VAR]:
                     if color == RED_OBS_VAL:
                         prob = PROB_GHOST_RED
                     elif color == BLUE_OBS_VAL:
                         prob = 1 - PROB_GHOST_RED
                     elif color == NO_OBS_VAL:
                         prob = 0
+                else:
+                    prob = 0
                 obsVarFactor.setProbability(assignment, prob)
             bayesNet.setCPT(obsVar, obsVarFactor)    
 

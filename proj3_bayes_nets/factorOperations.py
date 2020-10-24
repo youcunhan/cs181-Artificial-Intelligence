@@ -171,13 +171,15 @@ def eliminateWithCallTracking(callTrackingList=None):
         unconditionedVariables = unconditionedVariables.difference(set([eliminationVariable]))
         variableDomainsDict = factor.variableDomainsDict()
 
-        newFactor = Factor(unconditionedVariables, conditionedVariables, variableDomainsDict)
-        for newAssignment in newFactor.getAllPossibleAssignmentDicts():
-            prob = 0
-            for assignment in factor.getAllPossibleAssignmentDicts():
-                if newAssignment.items() <= assignment.items():
-                    prob += factor.getProbability(assignment)
-            newFactor.setProbability(newAssignment, prob)
+        newFactor = Factor([var for var in factor.unconditionedVariables() if var != eliminationVariable], factor.conditionedVariables() , factor.variableDomainsDict())
+        eliminations = factor.variableDomainsDict()[eliminationVariable]
+        for assignment in newFactor.getAllPossibleAssignmentDicts():
+            probability = 0
+            for elimination in eliminations:
+                old = assignment.copy()
+                old[eliminationVariable] = elimination
+                probability += factor.getProbability(old)
+            newFactor.setProbability(assignment, probability)
         return newFactor
 
     return eliminate
@@ -248,8 +250,6 @@ def normalize(factor):
     sumProb = sum([factor.getProbability(assignment) for assignment in factor.getAllPossibleAssignmentDicts()])
     newFactor = Factor(unconditionedVariables, conditionedVariables, variableDomainsDict)
 
-    if sumProb == 0.0:
-        return None
     for assignment in newFactor.getAllPossibleAssignmentDicts():
         prob = factor.getProbability(assignment) / sumProb
         newFactor.setProbability(assignment, prob)
